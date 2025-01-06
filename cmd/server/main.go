@@ -13,10 +13,10 @@ import (
 	"syscall"
 	"time"
 
-	AuthServer "auth/internal/auth/httphandler"
-	repo "auth/internal/user/repo/gorm"
+	authserver "auth/internal/auth/httphandler"
+	userrepo "auth/internal/user/repo/gorm"
 
-	serverComposer "github.com/jkitajima/composer"
+	servercomposer "github.com/jkitajima/composer"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
@@ -27,6 +27,11 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+)
+
+const (
+	service string = "auth"
+	path    string = service + "/cmd/server"
 )
 
 func main() {
@@ -64,7 +69,7 @@ func exec(
 	tracer := otel.Tracer("auth")
 
 	// Mounting routers
-	composer := serverComposer.NewComposer(
+	composer := servercomposer.NewComposer(
 		middleware.Recoverer,
 		middleware.AllowContentType(
 			"application/json",
@@ -74,7 +79,7 @@ func exec(
 		middleware.RedirectSlashes,
 	)
 	healthCheck := SetupHealthCheck(cfg, logger)
-	authServer := AuthServer.NewServer(jwtAuth, db, inputValidator, logger, tracer)
+	authServer := authserver.NewServer(jwtAuth, db, inputValidator, logger, tracer)
 	if err := composer.Compose(healthCheck, authServer); err != nil {
 		return err
 	}
@@ -146,11 +151,7 @@ func initDB(config *DB) (*gorm.DB, error) {
 	db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
 
 	// Migrate the schema
-	db.AutoMigrate(&repo.UserModel{})
+	db.AutoMigrate(&userrepo.UserModel{})
 
 	return db, nil
 }
-
-const (
-	Path string = "auth/cmd/server"
-)

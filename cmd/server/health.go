@@ -12,7 +12,7 @@ import (
 	"github.com/jkitajima/composer"
 
 	"github.com/alexliesenfeld/health"
-	healthPsql "github.com/hellofresh/health-go/v5/checks/postgres"
+	checkpostgres "github.com/hellofresh/health-go/v5/checks/postgres"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -48,13 +48,13 @@ func SetupHealthCheck(cfg *Config, logger *slog.Logger) composer.Server {
 			time.Duration(cfg.Server.Health.Delay)*time.Second,
 			health.Check{
 				Name: "db",
-				Check: healthPsql.New(healthPsql.Config{
+				Check: checkpostgres.New(checkpostgres.Config{
 					DSN: cfg.DB.DSN,
 				}),
 				MaxContiguousFails: uint(cfg.Server.Health.Retries),
 			}),
 		health.WithStatusListener(func(ctx context.Context, state health.CheckerState) {
-			status := otel.FormatLog(Path, fmt.Sprintf("health.go [SetupHealthCheck]: health status changed to %q", state.Status), nil)
+			status := otel.FormatLog(path, fmt.Sprintf("health.go [SetupHealthCheck]: health status changed to %q", state.Status), nil)
 			switch state.Status {
 			case health.StatusUp:
 				logger.Info(status)
