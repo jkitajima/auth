@@ -11,7 +11,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const FileInsert = "insert.go"
+
 func (db *DB) Insert(ctx context.Context, u *user.User) error {
+	const self = "Insert"
+
 	var expiration int
 	if u.VerificationCodeExpiration != nil {
 		expiration = int(u.VerificationCodeExpiration.Unix())
@@ -42,7 +46,7 @@ func (db *DB) Insert(ctx context.Context, u *user.User) error {
 
 	result := db.Create(model)
 	if result.Error != nil {
-		db.logger.WarnContext(ctx, otel.FormatLog(Path, "insert.go [Insert]: failed to create user", result.Error))
+		db.logger.WarnContext(ctx, otel.FormatLog(Path, FileInsert, self, "failed to create user", result.Error))
 		err := result.Error.(*pgconn.PgError)
 		switch err.Code {
 		case "23505":
@@ -51,7 +55,7 @@ func (db *DB) Insert(ctx context.Context, u *user.User) error {
 			return user.ErrInternal
 		}
 	}
-	db.logger.InfoContext(ctx, otel.FormatLog(Path, fmt.Sprintf("insert.go [Insert]: created a new user with id %q", model.ID.String()), nil))
+	db.logger.InfoContext(ctx, otel.FormatLog(Path, FileInsert, self, fmt.Sprintf("created a new user with id %q", model.ID.String()), nil))
 
 	u.ID = model.ID
 	u.EmailVerified = model.EmailVerified

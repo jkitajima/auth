@@ -15,7 +15,11 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
+const FileRegisterUser = "register_user.go"
+
 func (s *AuthServer) handleUserRegister() http.HandlerFunc {
+	const self = "handleUserRegister"
+
 	type request struct {
 		Email    string `json:"email" validate:"required,email"`
 		Password string `json:"password" validate:"required"`
@@ -86,7 +90,7 @@ func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 		if err := responder.Respond(w, r, http.StatusCreated, &responder.DataField{Data: resp}); err != nil {
 			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
 			span.RecordError(err)
-			s.logger.ErrorContext(ctx, otel.FormatLog(Path, "register_user.go [handleUserRegister]: failed to encode response", err))
+			s.logger.ErrorContext(ctx, otel.FormatLog(Path, FileRegisterUser, self, "failed to encode response", err))
 			responder.RespondInternalError(w, r)
 			return
 		}

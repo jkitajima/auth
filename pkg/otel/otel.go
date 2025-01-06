@@ -24,7 +24,7 @@ func Route(router chi.Router, method string, pattern string, fn http.HandlerFunc
 	}
 }
 
-func FormatLog(prefix string, msg string, err error) string {
+func FormatLog(prefix, filename, funcname, msg string, err error) string {
 	format := "%s/%s: %s"
 	if prefix == "" {
 		format = format[3:]
@@ -33,10 +33,14 @@ func FormatLog(prefix string, msg string, err error) string {
 	if err == nil {
 		format = format[:len(format)-4]
 		if prefix == "" {
-			return fmt.Sprintf(format, msg)
+			return fmt.Sprintf(format, prefixMsg(filename, funcname, msg))
 		}
-		return fmt.Sprintf(format, prefix, msg)
+		return fmt.Sprintf(format, prefix, prefixMsg(filename, funcname, msg))
 	}
 
-	return fmt.Sprintf(format, prefix, msg, err.Error())
+	return fmt.Sprintf(format, prefix, prefixMsg(filename, funcname, msg), err.Error())
+}
+
+func prefixMsg(filename, funcname, msg string) string {
+	return fmt.Sprintf("%s [%s]: %s", filename, funcname, msg)
 }

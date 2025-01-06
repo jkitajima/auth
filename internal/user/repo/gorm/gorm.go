@@ -8,7 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const Path = "auth/pkg/user/repo/gorm"
+const (
+	Path string = "auth/internal/user/repo/gorm"
+)
 
 type DB struct {
 	*gorm.DB

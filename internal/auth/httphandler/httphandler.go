@@ -17,6 +17,10 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	Path = "auth/internal/auth/httphandler"
+)
+
 type AuthServer struct {
 	mux            *chi.Mux
 	prefix         string
@@ -61,7 +65,3 @@ func NewServer(
 	s.addRoutes()
 	return s
 }
-
-const (
-	Path string = "auth/internal/auth/httphandler"
-)

@@ -8,6 +8,12 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	ErrInternal          = errors.New("the user service encountered an unexpected condition that prevented it from fulfilling the request")
+	ErrNotFoundByID      = errors.New("could not find any user with provided ID")
+	ErrEmailAlreadyInUse = errors.New("provided email address is already in use")
+)
+
 type User struct {
 	ID                         uuid.UUID
 	Email                      string
@@ -30,9 +36,3 @@ type Repoer interface {
 	// UpdateByID(context.Context, uuid.UUID, *User) error
 	// SoftDeleteByID(context.Context, uuid.UUID) error
 }
-
-var (
-	ErrInternal          = errors.New("the user service encountered an unexpected condition that prevented it from fulfilling the request")
-	ErrNotFoundByID      = errors.New("could not find any user with provided ID")
-	ErrEmailAlreadyInUse = errors.New("provided email address is already in use")
-)
