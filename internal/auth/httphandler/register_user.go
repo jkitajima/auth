@@ -19,6 +19,7 @@ const FileRegisterUser = "register_user.go"
 
 func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 	const self = "handleUserRegister"
+	const tracename string = "auth_register_user"
 
 	type request struct {
 		Email    string `json:"email" validate:"required,email"`
@@ -26,9 +27,11 @@ func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 	}
 
 	type response struct {
+		Entity    string    `json:"entity"`
 		ID        uuid.UUID `json:"id"`
 		Email     string    `json:"email"`
 		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
 	}
 
 	contract := map[string]responder.Field{
@@ -41,8 +44,6 @@ func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 			Validation: "Field value cannot be an empty string.",
 		},
 	}
-
-	const tracename string = "auth_register_user"
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, span := s.tracer.Start(r.Context(), tracename)
@@ -82,9 +83,11 @@ func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 		}
 
 		resp := response{
+			Entity:    s.entity,
 			ID:        createResponse.User.ID,
 			Email:     createResponse.User.Email,
 			CreatedAt: createResponse.User.CreatedAt,
+			UpdatedAt: createResponse.User.UpdatedAt,
 		}
 
 		if err := responder.Respond(w, r, http.StatusCreated, &responder.DataField{Data: resp}); err != nil {

@@ -22,6 +22,7 @@ const (
 )
 
 type AuthServer struct {
+	entity         string
 	mux            *chi.Mux
 	prefix         string
 	service        *auth.Service
@@ -52,6 +53,7 @@ func NewServer(
 	tracer trace.Tracer,
 ) composer.Server {
 	s := &AuthServer{
+		entity:         "users",
 		prefix:         "/auth",
 		mux:            chi.NewRouter(),
 		auth:           jwtauth,
