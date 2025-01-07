@@ -65,8 +65,8 @@ func exec(
 	}
 
 	inputValidator := validator.New(validator.WithRequiredStructEnabled())
-	logger := otelslog.NewLogger("auth")
-	tracer := otel.Tracer("auth")
+	logger := otelslog.NewLogger(service)
+	tracer := otel.Tracer(service)
 
 	// Mounting routers
 	composer := servercomposer.NewComposer(

@@ -42,7 +42,7 @@ func setupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceName("auth"),
+			semconv.ServiceName(service),
 		),
 	)
 	if err != nil {
