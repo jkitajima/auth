@@ -26,10 +26,10 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 	}
 
 	type response struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-		TokenType    string `json:"token_type"`
-		ExpiresIn    int    `json:"expires_in"`
+		AccessToken string `json:"access_token"`
+		// RefreshToken string `json:"refresh_token"`
+		TokenType string `json:"token_type"`
+		ExpiresIn int    `json:"expires_in"`
 	}
 
 	decodeForm := func(r *http.Request) (request, error) {
@@ -83,7 +83,7 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 			span.RecordError(err)
 			switch err {
 			case user.ErrNotFoundByEmail:
-				responder.RespondMetaMessage(w, r, http.StatusBadRequest, "Could not find any user with provided email.")
+				fallthrough
 			case auth.ErrInvalidCredentials:
 				responder.RespondMetaMessage(w, r, http.StatusBadRequest, "Invalid credentials.")
 			case user.ErrInternal:
@@ -97,12 +97,9 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 		}
 
 		resp := response{
-			AccessToken: requestAcessTokenResponse.AccessToken,
-			// Entity:    s.entity,
-			// ID:        createResponse.User.ID,
-			// Email:     createResponse.User.Email,
-			// CreatedAt: createResponse.User.CreatedAt,
-			// UpdatedAt: createResponse.User.UpdatedAt,
+			AccessToken: string(requestAcessTokenResponse.AccessToken),
+			TokenType:   requestAcessTokenResponse.TokenType,
+			ExpiresIn:   requestAcessTokenResponse.ExpiresIn,
 		}
 
 		if err := responder.Respond(w, r, http.StatusCreated, &responder.DataField{Data: resp}); err != nil {

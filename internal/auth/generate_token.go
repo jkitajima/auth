@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwt"
 )
 
@@ -13,7 +14,9 @@ type GenerateTokenRequest struct {
 }
 
 type GenerateTokenResponse struct {
-	Token jwt.Token
+	AccessToken []byte
+	TokenType   string
+	ExpiresIn   int
 }
 
 func (s *Service) GenerateToken(ctx context.Context, req GenerateTokenRequest) (GenerateTokenResponse, error) {
@@ -24,6 +27,7 @@ func (s *Service) GenerateToken(ctx context.Context, req GenerateTokenRequest) (
 		Subject(req.UserID.String()).
 		Audience(s.JWTConfig.Audience).
 		Expiration(now.Add(time.Duration(s.JWTConfig.Expiration) * time.Second)).
+		NotBefore(now).
 		IssuedAt(now).
 		JwtID(uuid.NewString()).
 		Build()
@@ -31,5 +35,14 @@ func (s *Service) GenerateToken(ctx context.Context, req GenerateTokenRequest) (
 		return GenerateTokenResponse{}, err
 	}
 
-	return GenerateTokenResponse{Token: token}, nil
+	signed, err := jwt.Sign(token, jwt.WithKey(jwa.HS256(), []byte(s.JWTConfig.Key)))
+	if err != nil {
+		return GenerateTokenResponse{}, err
+	}
+
+	return GenerateTokenResponse{
+		AccessToken: signed,
+		TokenType:   "Bearer",
+		ExpiresIn:   s.JWTConfig.Expiration,
+	}, nil
 }
