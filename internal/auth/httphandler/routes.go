@@ -16,14 +16,11 @@ func (s *AuthServer) addRoutes() {
 	s.mux.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(s.auth))
 		r.Use(responder.RespondAuth(s.auth))
-
-		// otel.Route(r, http.MethodPost, "/", s.handleUserCreate())
-		// otel.Route(r, http.MethodPatch, "/{userID}", s.handleUserUpdateByID())
-		// otel.Route(r, http.MethodDelete, "/{userID}", s.handleUserSoftDeleteByID())
 	})
 
 	// Public routes
 	s.mux.Group(func(r chi.Router) {
+		otel.Route(r, http.MethodPost, "/oauth/token", s.handleRequestAccessToken())
 		otel.Route(r, http.MethodPost, "/register", s.handleUserRegister())
 	})
 }

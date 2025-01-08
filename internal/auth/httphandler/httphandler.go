@@ -6,7 +6,7 @@ import (
 
 	"auth/internal/auth"
 	"auth/internal/user"
-	userRepo "auth/internal/user/repo/gorm"
+	userrepo "auth/internal/user/repo/gorm"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jkitajima/composer"
@@ -57,7 +57,7 @@ func NewServer(
 		prefix:         "/auth",
 		mux:            chi.NewRouter(),
 		auth:           jwtauth,
-		db:             userRepo.NewRepo(db, logger),
+		db:             userrepo.NewRepo(db, logger),
 		inputValidator: validtr,
 		logger:         logger,
 		tracer:         tracer,

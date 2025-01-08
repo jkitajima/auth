@@ -64,7 +64,7 @@ func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 			return
 		}
 
-		createResponse, err := s.service.Register(ctx, auth.RegisterRequest{
+		registerResponse, err := s.service.Register(ctx, auth.RegisterRequest{
 			Email:    req.Email,
 			Password: req.Password,
 		})
@@ -84,10 +84,10 @@ func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 
 		resp := response{
 			Entity:    s.entity,
-			ID:        createResponse.User.ID,
-			Email:     createResponse.User.Email,
-			CreatedAt: createResponse.User.CreatedAt,
-			UpdatedAt: createResponse.User.UpdatedAt,
+			ID:        registerResponse.User.ID,
+			Email:     registerResponse.User.Email,
+			CreatedAt: registerResponse.User.CreatedAt,
+			UpdatedAt: registerResponse.User.UpdatedAt,
 		}
 
 		if err := responder.Respond(w, r, http.StatusCreated, &responder.DataField{Data: resp}); err != nil {
