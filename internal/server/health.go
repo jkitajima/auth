@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -58,7 +58,7 @@ func SetupHealthCheck(cfg *Config, logger *slog.Logger) composer.Server {
 				MaxContiguousFails: uint(cfg.Server.Health.Retries),
 			}),
 		health.WithStatusListener(func(ctx context.Context, state health.CheckerState) {
-			status := otel.FormatLog(path, fileHealth, self, fmt.Sprintf("health status changed to %q", state.Status), nil)
+			status := otel.FormatLog(Path, fileHealth, self, fmt.Sprintf("health status changed to %q", state.Status), nil)
 			switch state.Status {
 			case health.StatusUp:
 				logger.Info(status)

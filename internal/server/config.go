@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -13,15 +13,15 @@ import (
 type Environment string
 
 const (
-	local Environment = "local"
+	Local Environment = "local"
 )
 
 func NewEnvironment(env string) Environment {
 	switch env {
 	case "local":
-		return local
+		return Local
 	default:
-		return local
+		return Local
 	}
 }
 
@@ -78,7 +78,7 @@ type DB struct {
 }
 
 func NewConfig(stdout io.Writer, args []string) (*Config, error) {
-	fs := ff.NewFlagSet(service)
+	fs := ff.NewFlagSet(Service)
 	var (
 		config                string
 		env                   string
@@ -107,7 +107,7 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 		dbSSL                 string
 	)
 	fs.StringEnumVar(&config, 0, "config", "environment configuration file", "env.yaml")
-	fs.StringEnumVar(&env, 0, "env", "build environment", string(local))
+	fs.StringEnumVar(&env, 0, "env", "build environment", string(Local))
 	fs.StringVar(&serverHost, 0, "server.host", "", "server host address to listen for incoming requests")
 	fs.StringVar(&serverPort, 0, "server.port", "", "server port number to listen for incoming requests")
 	fs.IntVar(&serverTimeoutRead, 0, "server.timeout.read", 5, "number of seconds that the server will wait for reading requests")
@@ -133,7 +133,7 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 	fs.StringVar(&dbSSL, 0, "db.ssl", "", "database ssl mode")
 
 	if err := ff.Parse(fs, args[1:],
-		ff.WithEnvVarPrefix(strings.ToUpper(service)),
+		ff.WithEnvVarPrefix(strings.ToUpper(Service)),
 		ff.WithConfigFileParser(ffyaml.Parse),
 		ff.WithConfigFileFlag("config"),
 		ff.WithConfigIgnoreUndefinedFlags(),

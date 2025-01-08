@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -42,7 +42,7 @@ func setupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceName(service),
+			semconv.ServiceName(Service),
 		),
 	)
 	if err != nil {
