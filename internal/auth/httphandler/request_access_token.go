@@ -102,7 +102,7 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 			ExpiresIn:   requestAcessTokenResponse.ExpiresIn,
 		}
 
-		if err := responder.Respond(w, r, http.StatusCreated, &responder.DataField{Data: resp}); err != nil {
+		if err := responder.Respond(w, r, http.StatusCreated, resp); err != nil {
 			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
 			span.RecordError(err)
 			s.logger.ErrorContext(ctx, otel.FormatLog(Path, FileRegisterUser, self, "failed to encode response", err))
