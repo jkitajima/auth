@@ -27,6 +27,7 @@ type AuthServer struct {
 	prefix         string
 	service        *auth.Service
 	auth           *jwtauth.JWTAuth
+	jwtConfig      *auth.JWTConfig
 	db             user.Repoer
 	inputValidator *validator.Validate
 	logger         *slog.Logger
@@ -47,6 +48,7 @@ func (s *AuthServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func NewServer(
 	jwtauth *jwtauth.JWTAuth,
+	jwtconfig *auth.JWTConfig,
 	db *gorm.DB,
 	validtr *validator.Validate,
 	logger *slog.Logger,
@@ -57,13 +59,14 @@ func NewServer(
 		prefix:         "/auth",
 		mux:            chi.NewRouter(),
 		auth:           jwtauth,
+		jwtConfig:      jwtconfig,
 		db:             userrepo.NewRepo(db, logger),
 		inputValidator: validtr,
 		logger:         logger,
 		tracer:         tracer,
 	}
 
-	s.service = &auth.Service{UserRepo: s.db}
+	s.service = &auth.Service{JWTConfig: jwtconfig, UserRepo: s.db}
 	s.addRoutes()
 	return s
 }

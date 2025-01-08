@@ -60,8 +60,11 @@ type Auth struct {
 }
 
 type JWT struct {
-	Algorithm string
-	Key       string
+	Algorithm  string
+	Key        string
+	Issuer     string
+	Audience   []string
+	Expiration int
 }
 
 type DB struct {
@@ -93,6 +96,9 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 		serverMaxHeaderBytes  int
 		authJWTAlg            string
 		authJWTKey            string
+		authJWTIssuer         string
+		authJWTAudience       []string
+		authJWTExpiration     int
 		dbHost                string
 		dbPort                string
 		dbName                string
@@ -116,6 +122,9 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 	fs.IntVar(&serverMaxHeaderBytes, 0, "server.header", 10240, "number of bytes that will be the maximum permitted size of the headers in an HTTP request")
 	fs.StringVar(&authJWTAlg, 0, "auth.jwt.alg", "", "algorithm that was used for signing the JWT token")
 	fs.StringVar(&authJWTKey, 0, "auth.jwt.key", "", "key that was used for signing the JWT token")
+	fs.StringVar(&authJWTIssuer, 0, "auth.jwt.iss", "", `the "iss" (issuer) claim identifies the principal that issued the jwt`)
+	fs.StringListVar(&authJWTAudience, 0, "auth.jwt.aud", `the "aud" (audience) claim identifies the recipients that the jwt is intended for`)
+	fs.IntVar(&authJWTExpiration, 0, "auth.jwt.exp", 900, `the "exp" (expiration time) claim identifies the expiration time on or after which the jwt must not be accepted for processing`)
 	fs.StringVar(&dbHost, 0, "db.host", "", "database host address")
 	fs.StringVar(&dbPort, 0, "db.port", "", "database port number")
 	fs.StringVar(&dbName, 0, "db.name", "", "database name")
@@ -156,8 +165,11 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 		},
 		Auth: &Auth{
 			&JWT{
-				Algorithm: authJWTAlg,
-				Key:       authJWTKey,
+				Algorithm:  authJWTAlg,
+				Key:        authJWTKey,
+				Issuer:     authJWTIssuer,
+				Audience:   authJWTAudience,
+				Expiration: authJWTExpiration,
 			},
 		},
 		DB: &DB{

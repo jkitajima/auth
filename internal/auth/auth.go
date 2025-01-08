@@ -11,6 +11,15 @@ var (
 	ErrInvalidCredentials = errors.New("credentials was not valid")
 )
 
+type JWTConfig struct {
+	Algorithm  string
+	Key        string
+	Issuer     string
+	Audience   []string
+	Expiration int
+}
+
 type Service struct {
-	UserRepo user.Repoer
+	JWTConfig *JWTConfig
+	UserRepo  user.Repoer
 }

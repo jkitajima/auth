@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"auth/internal/auth"
 	authserver "auth/internal/auth/httphandler"
 	userrepo "auth/internal/user/repo/gorm"
 
@@ -79,7 +80,7 @@ func exec(
 		middleware.RedirectSlashes,
 	)
 	healthCheck := SetupHealthCheck(cfg, logger)
-	authServer := authserver.NewServer(jwtAuth, db, inputValidator, logger, tracer)
+	authServer := authserver.NewServer(jwtAuth, (*auth.JWTConfig)(cfg.Auth.JWT), db, inputValidator, logger, tracer)
 	if err := composer.Compose(healthCheck, authServer); err != nil {
 		return err
 	}
