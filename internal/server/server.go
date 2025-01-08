@@ -75,7 +75,8 @@ func Exec(
 
 	// API Docs
 	composer.Mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "../../api/swagger.html")
+		// Path relative to the server binary
+		http.ServeFile(w, r, "./api/swagger.html") // if binary is at root
 	})
 
 	healthCheck := SetupHealthCheck(cfg, logger)
