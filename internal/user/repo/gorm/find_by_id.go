@@ -34,14 +34,19 @@ func (db *DB) FindByID(ctx context.Context, id uuid.UUID) (*user.User, error) {
 	db.logger.InfoContext(ctx, otel.FormatLog(Path, FileFindByID, self, fmt.Sprintf("found user with id %q", model.ID.String()), nil))
 	span.AddEvent(fmt.Sprintf("db query returned user_id %q", id.String()))
 
-	unixts := time.Unix(int64(*model.VerificationCodeExpiration), 0)
+	expiration := model.VerificationCodeExpiration
+	var unixts *time.Time
+	if expiration != nil {
+		t := time.Unix(int64(*model.VerificationCodeExpiration), 0)
+		unixts = &t
+	}
 	user := user.User{
 		ID:                         model.ID,
 		Email:                      model.Email,
 		EmailVerified:              model.EmailVerified,
 		Password:                   model.Password,
 		VerificationCode:           model.VerificationCode,
-		VerificationCodeExpiration: &unixts,
+		VerificationCodeExpiration: unixts,
 		CreatedAt:                  model.CreatedAt,
 		UpdatedAt:                  model.UpdatedAt,
 	}

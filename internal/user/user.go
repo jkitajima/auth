@@ -9,10 +9,11 @@ import (
 )
 
 var (
-	ErrInternal          = errors.New("the user service encountered an unexpected condition that prevented it from fulfilling the request")
-	ErrNotFoundByID      = errors.New("could not find any user with provided ID")
-	ErrNotFoundByEmail   = errors.New("could not find any user with provided email")
-	ErrEmailAlreadyInUse = errors.New("provided email address is already in use")
+	ErrInternal           = errors.New("the user service encountered an unexpected condition that prevented it from fulfilling the request")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrNotFoundByID       = errors.New("could not find any user with provided ID")
+	ErrNotFoundByEmail    = errors.New("could not find any user with provided email")
+	ErrEmailAlreadyInUse  = errors.New("provided email address is already in use")
 )
 
 type User struct {
@@ -35,6 +36,5 @@ type Repoer interface {
 	Insert(context.Context, *User) error
 	FindByID(context.Context, uuid.UUID) (*User, error)
 	FindByEmail(context.Context, string) (*User, error)
-	// UpdateByID(context.Context, uuid.UUID, *User) error
-	// SoftDeleteByID(context.Context, uuid.UUID) error
+	HardDeleteByID(context.Context, uuid.UUID) error
 }

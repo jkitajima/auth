@@ -1,0 +1,104 @@
+name: auth
+
+services:
+  db:
+    container_name: auth_db
+    image: postgres:17.2-alpine3.21
+    expose:
+      - 5432
+    ports:
+      - 127.0.0.1:5432:5432
+    environment:
+      POSTGRES_PASSWORD: passwd
+      POSTGRES_USER: postgres
+    restart: always
+    shm_size: 128mb
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+    networks:
+      - auth
+    volumes:
+      - auth_db:/var/lib/postgresql/data
+
+  otelcol:
+    container_name: auth_otelcol
+    image: otel/opentelemetry-collector-contrib:0.116.1
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+    networks:
+      - auth
+    volumes:
+      - ./configs/otel/collector.yaml:/etc/otelcol-contrib/config.yaml
+
+  jaeger:
+    container_name: auth_jaeger
+    image: jaegertracing/all-in-one:1.64.0
+    ports:
+      - 6831:6831
+      - 16685:16685
+      - 16686:16686
+    networks:
+      - auth
+
+  loki:
+    container_name: auth_grafana_loki
+    image: grafana/loki:3.3.2
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - auth
+
+  grafana:
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        - name: Jaeger
+          type: jaeger
+          access: browser
+          url: http://jaeger:16686
+          editable: true
+        EOF
+        /run.sh
+    container_name: auth_grafana
+    image: grafana/grafana:11.4.0
+    ports:
+      - "3000:3000"
+    networks:
+      - auth
+
+networks:
+  auth:
+    name: auth
+
+volumes:
+  auth_db:
+    name: auth_db

@@ -15,6 +15,7 @@ import (
 
 	"auth/internal/auth"
 	authserver "auth/internal/auth/httphandler"
+	userserver "auth/internal/user/httphandler"
 	userrepo "auth/internal/user/repo/gorm"
 
 	servercomposer "github.com/jkitajima/composer"
@@ -81,7 +82,8 @@ func exec(
 	)
 	healthCheck := SetupHealthCheck(cfg, logger)
 	authServer := authserver.NewServer(jwtAuth, (*auth.JWTConfig)(cfg.Auth.JWT), db, inputValidator, logger, tracer)
-	if err := composer.Compose(healthCheck, authServer); err != nil {
+	userServer := userserver.NewServer(jwtAuth, db, inputValidator, logger, tracer)
+	if err := composer.Compose(healthCheck, authServer, userServer); err != nil {
 		return err
 	}
 
