@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 
+	"auth/pkg/password"
+
 	"github.com/google/uuid"
 )
 
@@ -19,11 +21,11 @@ func (s *Service) HardDeleteByID(ctx context.Context, req HardDeleteByIDRequest)
 	}
 
 	// Check if incoming password matches stored password
-	checkPasswordRequest := CheckPasswordRequest{
+	checkPasswordRequest := password.CheckPasswordRequest{
 		Input:    req.Password,
 		Password: findResponse.User.Password,
 	}
-	checkPasswordResponse, err := s.CheckPassword(ctx, checkPasswordRequest)
+	checkPasswordResponse, err := password.CheckPassword(ctx, checkPasswordRequest)
 	if err != nil {
 		return err
 	}

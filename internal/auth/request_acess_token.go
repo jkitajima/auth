@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+
+	"auth/pkg/password"
 )
 
 type AccessTokenRequest struct {
@@ -21,11 +23,11 @@ func (s *Service) RequestAccessToken(ctx context.Context, req AccessTokenRequest
 	}
 
 	// Check if incoming password matches stored password
-	checkPasswordRequest := CheckPasswordRequest{
+	checkPasswordRequest := password.CheckPasswordRequest{
 		Input:    req.Password,
 		Password: user.Password,
 	}
-	checkPasswordResponse, err := s.CheckPassword(ctx, checkPasswordRequest)
+	checkPasswordResponse, err := password.CheckPassword(ctx, checkPasswordRequest)
 	if err != nil {
 		return AccessTokenResponse{}, err
 	}
