@@ -80,6 +80,12 @@ func exec(
 		middleware.CleanPath,
 		middleware.RedirectSlashes,
 	)
+
+	// API Docs
+	composer.Mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "../../api/swagger.html")
+	})
+
 	healthCheck := SetupHealthCheck(cfg, logger)
 	authServer := authserver.NewServer(jwtAuth, (*auth.JWTConfig)(cfg.Auth.JWT), db, inputValidator, logger, tracer)
 	userServer := userserver.NewServer(jwtAuth, db, inputValidator, logger, tracer)

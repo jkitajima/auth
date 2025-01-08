@@ -1,0 +1,599 @@
+openapi: 3.1.0
+info:
+  title: Auth Service
+  description: ''
+  version: 1.0.0
+tags: []
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      deprecated: false
+      description: ''
+      tags: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  x-apidog-mock: '{{$internet.email}}'
+                password:
+                  type: string
+                  x-apidog-mock: '{{$internet.password}}'
+                  format: password
+              x-apidog-orders:
+                - email
+                - password
+              required:
+                - email
+                - password
+              x-apidog-ignore-properties: []
+            example:
+              email: Dwight_Lemke@yahoo.com
+              password: u9hVdXVk3ZMGsUh
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      entity:
+                        type: string
+                        const: users
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the record was created
+                        x-apidog-mock: '{{$date.past}}'
+                      updated_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the record was last updated
+                        x-apidog-mock: '{{$date.recent}}'
+                    description: Object containing the result of the request
+                    x-apidog-orders:
+                      - 01JH3EAM0JYZ9SD3EDK05M6VBH
+                      - 01JH3EEFJ4MZQ5TEAH3TNZQP58
+                    readOnly: true
+                    x-apidog-refs:
+                      01JH3EAM0JYZ9SD3EDK05M6VBH:
+                        $ref: '#/components/schemas/User'
+                        x-apidog-overrides:
+                          email_verified: null
+                          password: null
+                          salt: null
+                          verification_code: null
+                          verification_code_expiration: null
+                      01JH3EEFJ4MZQ5TEAH3TNZQP58:
+                        $ref: '#/components/schemas/Datetime%20logs'
+                        x-apidog-overrides:
+                          deleted_at: null
+                    required:
+                      - entity
+                      - id
+                      - email
+                    x-apidog-ignore-properties:
+                      - entity
+                      - id
+                      - email
+                      - created_at
+                      - updated_at
+                title: ''
+                x-apidog-orders:
+                  - data
+                required:
+                  - data
+                readOnly: true
+                x-apidog-refs: {}
+                x-apidog-ignore-properties: []
+          headers: {}
+          x-apidog-name: Created
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: Bad Request
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 400
+                      message:
+                        type: string
+                        description: Bad Request
+                        default: Bad Request
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+          headers: {}
+          x-apidog-name: Bad Request
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: >-
+                          The 500 (Internal Server Error) status code indicates
+                          that the server encountered an unexpected condition
+                          that prevented it from fulfilling the request.
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 500
+                      message:
+                        type: string
+                        description: >-
+                          Message indicating a server-side error. Detailed
+                          information is intentionally withheld for security
+                          reasons.
+                        default: Internal Server Error
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                    x-apidog-ignore-properties: []
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+                x-apidog-ignore-properties: []
+          headers: {}
+          x-apidog-name: Internal Server Error
+      security: []
+      x-apidog-folder: Identity/Auth Service/Auth API
+      x-apidog-status: developing
+      x-run-in-apidog: https://app.apidog.com/web/project/768142/apis/api-12945281-run
+  /auth/oauth/token:
+    post:
+      summary: Request an acess token
+      deprecated: false
+      description: ''
+      tags: []
+      parameters: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - password
+                  x-apidog-enum:
+                    - value: password
+                      name: Password grant
+                      description: ''
+                  default: password
+                  example: ''
+                username:
+                  example: ''
+                  type: string
+                password:
+                  type: string
+                  format: password
+                  example: ''
+              required:
+                - grant_type
+                - username
+                - password
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                      token_type:
+                        type: string
+                        const: Bearer
+                      expires_in:
+                        type: integer
+                    description: Object containing the result of the request
+                    x-apidog-orders:
+                      - access_token
+                      - token_type
+                      - expires_in
+                    readOnly: true
+                    required:
+                      - access_token
+                      - expires_in
+                      - token_type
+                    x-apidog-ignore-properties: []
+                title: ''
+                x-apidog-orders:
+                  - data
+                required:
+                  - data
+                readOnly: true
+                x-apidog-ignore-properties: []
+          headers: {}
+          x-apidog-name: OK
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: Bad Request
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 400
+                      message:
+                        type: string
+                        description: Bad Request
+                        default: Bad Request
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+          headers: {}
+          x-apidog-name: Bad Request
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: >-
+                          The 500 (Internal Server Error) status code indicates
+                          that the server encountered an unexpected condition
+                          that prevented it from fulfilling the request.
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 500
+                      message:
+                        type: string
+                        description: >-
+                          Message indicating a server-side error. Detailed
+                          information is intentionally withheld for security
+                          reasons.
+                        default: Internal Server Error
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                    x-apidog-ignore-properties: []
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+                x-apidog-ignore-properties: []
+          headers: {}
+          x-apidog-name: Internal Server Error
+      security: []
+      x-apidog-folder: Identity/Auth Service/Auth API
+      x-apidog-status: developing
+      x-run-in-apidog: https://app.apidog.com/web/project/768142/apis/api-12969211-run
+  /users/{id}/delete:
+    post:
+      summary: Deletes an user
+      deprecated: false
+      description: ''
+      tags: []
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  format: password
+              x-apidog-orders:
+                - password
+              required:
+                - password
+              x-apidog-ignore-properties: []
+      responses:
+        '204':
+          description: ''
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties: {}
+                x-apidog-orders: []
+          headers: {}
+          x-apidog-name: No Content
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: Bad Request
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 400
+                      message:
+                        type: string
+                        description: Bad Request
+                        default: Bad Request
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+          headers: {}
+          x-apidog-name: Bad Request
+        '401':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: Unauthorized
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 401
+                      message:
+                        type: string
+                        description: Unauthorized
+                        default: Unauthorized
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+          headers: {}
+          x-apidog-name: Unauthorized
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: Forbidden
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 403
+                      message:
+                        type: string
+                        description: Forbidden
+                        default: Forbidden
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+          headers: {}
+          x-apidog-name: Forbidden
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      status:
+                        type: integer
+                        description: >-
+                          The 500 (Internal Server Error) status code indicates
+                          that the server encountered an unexpected condition
+                          that prevented it from fulfilling the request.
+                        x-apidog-mock: '{{$internet.httpStatusCode}}'
+                        default: 500
+                      message:
+                        type: string
+                        description: >-
+                          Message indicating a server-side error. Detailed
+                          information is intentionally withheld for security
+                          reasons.
+                        default: Internal Server Error
+                    x-apidog-orders:
+                      - status
+                      - message
+                    required:
+                      - status
+                      - message
+                    x-apidog-ignore-properties: []
+                title: ''
+                x-apidog-orders:
+                  - meta
+                readOnly: true
+                required:
+                  - meta
+                x-apidog-ignore-properties: []
+          headers: {}
+          x-apidog-name: Internal Server Error
+      security:
+        - bearer: []
+      x-apidog-folder: Identity/Auth Service/User API
+      x-apidog-status: developing
+      x-run-in-apidog: https://app.apidog.com/web/project/768142/apis/api-12991924-run
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        entity:
+          type: string
+          const: users
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        email_verified:
+          type: boolean
+          default: false
+        password:
+          type: string
+          format: password
+        verification_code:
+          type: integer
+          examples:
+            - 611789
+            - 343988
+        verification_code_expiration:
+          type: integer
+      x-apidog-orders:
+        - entity
+        - id
+        - email
+        - email_verified
+        - password
+        - verification_code
+        - verification_code_expiration
+      required:
+        - id
+        - email
+        - email_verified
+        - password
+        - verification_code
+        - verification_code_expiration
+        - entity
+      x-apidog-ignore-properties: []
+      x-apidog-folder: Auth
+    Datetime logs:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          description: The timestamp when the record was created
+          x-apidog-mock: '{{$date.past}}'
+        updated_at:
+          type: string
+          format: date-time
+          description: The timestamp when the record was last updated
+          x-apidog-mock: '{{$date.recent}}'
+        deleted_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: The timestamp when the record was logically deleted (soft deleted)
+          x-apidog-mock: '{{$date.future}}'
+      x-apidog-orders:
+        - created_at
+        - updated_at
+        - deleted_at
+      description: >-
+        This object represents a set of timestamps related to a particular
+        entity or event
+      x-apidog-ignore-properties: []
+      x-apidog-folder: ''
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+servers:
+  - url: http://127.0.0.1:8111
+    description: local
