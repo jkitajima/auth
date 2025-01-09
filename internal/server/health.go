@@ -17,7 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const fileHealth = "health.go"
+const FileHealth = "health.go"
 
 type HealthServer struct {
 	mux    *chi.Mux
@@ -58,7 +58,7 @@ func SetupHealthCheck(cfg *Config, logger *slog.Logger) composer.Server {
 				MaxContiguousFails: uint(cfg.Server.Health.Retries),
 			}),
 		health.WithStatusListener(func(ctx context.Context, state health.CheckerState) {
-			status := otel.FormatLog(Path, fileHealth, self, fmt.Sprintf("health status changed to %q", state.Status), nil)
+			status := otel.FormatLog(Path, FileHealth, self, fmt.Sprintf("health status changed to %q", state.Status), nil)
 			switch state.Status {
 			case health.StatusUp:
 				logger.Info(status)

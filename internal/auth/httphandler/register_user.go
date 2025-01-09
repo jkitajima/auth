@@ -19,7 +19,7 @@ const FileRegisterUser = "register_user.go"
 
 func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 	const self = "handleUserRegister"
-	const tracename string = "auth_register_user"
+	const tracename string = "auth.auth.register_user"
 
 	type request struct {
 		Email    string `json:"email" validate:"required,email"`

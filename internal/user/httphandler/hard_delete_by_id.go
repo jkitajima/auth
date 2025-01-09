@@ -18,7 +18,7 @@ const FileHardDeleteByID = "hard_delete_by_id.go"
 
 func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 	const self = "handleUserHardDeleteByID"
-	const tracename string = "user_hard_delete_by_id"
+	const tracename string = "auth.user.hard_delete_by_id"
 
 	type request struct {
 		Password string `json:"password" validate:"required"`

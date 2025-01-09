@@ -17,7 +17,7 @@ const FileRequestAccessToken = "request_access_token.go"
 
 func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 	const self = "handleRequestAccessToken"
-	const tracename string = "auth_request_acess_token"
+	const tracename string = "auth.auth.request_acess_token"
 
 	type request struct {
 		GrantType string
