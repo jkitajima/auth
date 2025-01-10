@@ -15,9 +15,11 @@ exporters:
     tls:
       insecure: true
   otlp/traces:
-      endpoint: jaeger:16685
-      tls:
-        insecure: true
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: 0.0.0.0:8889
   debug:
 
 extensions:
@@ -35,7 +37,7 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [debug, prometheus]
     logs:
       receivers: [otlp]
       processors: [batch]

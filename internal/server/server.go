@@ -24,7 +24,6 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 
 	"gorm.io/driver/postgres"
@@ -61,6 +60,7 @@ func Exec(
 	inputValidator := validator.New(validator.WithRequiredStructEnabled())
 	logger := otelslog.NewLogger(Service)
 	tracer := otel.Tracer(Service)
+	meter := otel.Meter(Service)
 
 	// Mounting routers
 	composer := servercomposer.NewComposer(
@@ -80,8 +80,17 @@ func Exec(
 	})
 
 	healthCheck := SetupHealthCheck(cfg, logger)
-	authServer := authserver.NewServer(jwtAuth, (*auth.JWTConfig)(cfg.Auth.JWT), db, inputValidator, logger, tracer)
-	userServer := userserver.NewServer(jwtAuth, db, inputValidator, logger, tracer)
+
+	authServer, err := authserver.NewServer(jwtAuth, (*auth.JWTConfig)(cfg.Auth.JWT), db, inputValidator, logger, tracer, meter)
+	if err != nil {
+		return err
+	}
+
+	userServer, err := userserver.NewServer(jwtAuth, db, inputValidator, logger, tracer, meter)
+	if err != nil {
+		return err
+	}
+
 	if err := composer.Compose(healthCheck, authServer, userServer); err != nil {
 		return err
 	}
@@ -95,9 +104,6 @@ func Exec(
 		err = errors.Join(err, otelShutdown(ctx))
 	}()
 
-	// Add HTTP instrumentation for the whole server
-	otelhandler := otelhttp.NewHandler(composer.Mux, "/")
-
 	// Server config
 	server := &http.Server{
 		Addr:           net.JoinHostPort(cfg.Server.Host, cfg.Server.Port),
@@ -106,7 +112,7 @@ func Exec(
 		ReadTimeout:    time.Second * time.Duration(cfg.Server.Timeout.Read),
 		IdleTimeout:    time.Second * time.Duration(cfg.Server.Timeout.Idle),
 		MaxHeaderBytes: cfg.Server.MaxHeaderBytes,
-		Handler:        otelhandler,
+		Handler:        composer,
 	}
 
 	// Graceful shutdown

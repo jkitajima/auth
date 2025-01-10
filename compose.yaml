@@ -38,7 +38,22 @@ services:
     networks:
       - auth
     volumes:
-      - ./configs/otel/collector.yaml:/etc/otelcol-contrib/config.yaml
+      - ./configs/otelcol.yaml:/etc/otelcol-contrib/config.yaml
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
+
+  prometheus:
+    container_name: auth_prometheus
+    image: prom/prometheus:v3.1.0
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus.yaml:/etc/prometheus/prometheus.yml
+    networks:
+      - auth
 
   jaeger:
     container_name: auth_jaeger
@@ -51,7 +66,7 @@ services:
       - auth
 
   loki:
-    container_name: auth_grafana_loki
+    container_name: auth_loki
     image: grafana/loki:3.3.2
     ports:
       - "3100:3100"
@@ -72,6 +87,10 @@ services:
         cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
         apiVersion: 1
         datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://prometheus:9090
         - name: Loki
           type: loki
           access: proxy 
@@ -94,6 +113,10 @@ services:
       - "3000:3000"
     networks:
       - auth
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
 
 networks:
   auth:

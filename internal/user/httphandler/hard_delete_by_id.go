@@ -11,14 +11,18 @@ import (
 
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
-const FileHardDeleteByID = "hard_delete_by_id.go"
+const (
+	OperationHardDeleteByID = "hard_delete_by_id"
+	FileHardDeleteByID      = OperationHardDeleteByID + ".go"
+)
 
 func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 	const self = "handleUserHardDeleteByID"
-	const tracename string = "auth.user.hard_delete_by_id"
 
 	type request struct {
 		Password string `json:"password" validate:"required"`
@@ -31,13 +35,13 @@ func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 		},
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := s.tracer.Start(r.Context(), tracename)
-		defer span.End()
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		span := trace.SpanFromContext(ctx)
 
 		_, claims, err := jwtauth.FromContext(ctx)
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			responder.RespondMetaMessage(w, r, http.StatusBadRequest, "Bearer token is malformatted.")
 			return
@@ -45,7 +49,7 @@ func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 
 		sub, err := uuid.Parse(claims["sub"].(string))
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			responder.RespondMetaMessage(w, r, http.StatusBadRequest, "Invalid UUID.")
 			return
@@ -54,14 +58,14 @@ func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 		id := r.PathValue("userID")
 		uuid, err := uuid.Parse(id)
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			responder.RespondMetaMessage(w, r, http.StatusBadRequest, "User ID must be a valid UUID.")
 			return
 		}
 
 		if sub != uuid {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			responder.RespondMetaMessage(w, r, http.StatusForbidden, "You are not allowed to request deletion of another user.")
 			return
@@ -69,14 +73,14 @@ func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 
 		req, err := responder.Decode[request](r)
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			responder.RespondMetaMessage(w, r, http.StatusBadRequest, "Request body is invalid.")
 			return
 		}
 
 		if errors := responder.ValidateInput(s.inputValidator, req, contract); len(errors) > 0 {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			responder.RespondClientErrors(w, r, errors...)
 			return
@@ -84,7 +88,7 @@ func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 
 		err = s.service.HardDeleteByID(ctx, user.HardDeleteByIDRequest{ID: uuid, Password: req.Password})
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			switch err {
 			case user.ErrNotFoundByID:
@@ -98,11 +102,14 @@ func (s *UserServer) handleUserHardDeleteByID() http.HandlerFunc {
 		}
 
 		if err := responder.Respond(w, r, http.StatusNoContent, nil); err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationHardDeleteByID))
 			span.RecordError(err)
 			s.logger.ErrorContext(ctx, otel.FormatLog(Path, FileHardDeleteByID, self, "failed to encode response", err))
 			responder.RespondInternalError(w, r)
 			return
 		}
 	}
+
+	otelhandler := otelhttp.NewHandler(http.HandlerFunc(handler), OperationHardDeleteByID)
+	return otelhandler.ServeHTTP
 }

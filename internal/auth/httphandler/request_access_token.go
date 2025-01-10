@@ -10,14 +10,18 @@ import (
 
 	"github.com/jkitajima/responder"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
-const FileRequestAccessToken = "request_access_token.go"
+const (
+	OperationRequestAccessToken = "request_access_token"
+	FileRequestAccessToken      = OperationRequestAccessToken + ".go"
+)
 
 func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 	const self = "handleRequestAccessToken"
-	const tracename string = "auth.auth.request_acess_token"
 
 	type request struct {
 		GrantType string
@@ -62,13 +66,13 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 		}, nil
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := s.tracer.Start(r.Context(), tracename)
-		defer span.End()
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		span := trace.SpanFromContext(ctx)
 
 		req, err := decodeForm(r)
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationRequestAccessToken))
 			span.RecordError(err)
 			responder.RespondMetaMessage(w, r, http.StatusBadRequest, err.Error())
 			return
@@ -79,7 +83,7 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 			Password: req.Password,
 		})
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationRequestAccessToken))
 			span.RecordError(err)
 			switch err {
 			case user.ErrNotFoundByEmail:
@@ -96,6 +100,8 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 			return
 		}
 
+		s.tokensGeneratedCounter.Add(ctx, 1)
+
 		resp := response{
 			AccessToken: string(requestAcessTokenResponse.AccessToken),
 			TokenType:   requestAcessTokenResponse.TokenType,
@@ -103,11 +109,14 @@ func (s *AuthServer) handleRequestAccessToken() http.HandlerFunc {
 		}
 
 		if err := responder.Respond(w, r, http.StatusOK, resp); err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", tracename))
+			span.SetStatus(codes.Error, fmt.Sprintf("%s failed", OperationRequestAccessToken))
 			span.RecordError(err)
 			s.logger.ErrorContext(ctx, otel.FormatLog(Path, FileRegisterUser, self, "failed to encode response", err))
 			responder.RespondInternalError(w, r)
 			return
 		}
 	}
+
+	otelhandler := otelhttp.NewHandler(http.HandlerFunc(handler), OperationRequestAccessToken)
+	return otelhandler.ServeHTTP
 }
