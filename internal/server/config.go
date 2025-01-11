@@ -13,15 +13,18 @@ import (
 type Environment string
 
 const (
-	Local Environment = "local"
+	EnvironmentTest  Environment = "test"
+	EnvironmentLocal Environment = "local"
 )
 
 func NewEnvironment(env string) Environment {
 	switch env {
+	case "test":
+		return EnvironmentTest
 	case "local":
-		return Local
+		fallthrough
 	default:
-		return Local
+		return EnvironmentLocal
 	}
 }
 
@@ -106,10 +109,10 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 		dbPasswd              string
 		dbSSL                 string
 	)
-	fs.StringEnumVar(&config, 0, "config", "environment configuration file", "env.yaml")
-	fs.StringEnumVar(&env, 0, "env", "build environment", string(Local))
-	fs.StringVar(&serverHost, 0, "server.host", "", "server host address to listen for incoming requests")
-	fs.StringVar(&serverPort, 0, "server.port", "", "server port number to listen for incoming requests")
+	fs.StringEnumVar(&config, 0, "config", "environment configuration file", "env.local.yaml", "env.test.yaml")
+	fs.StringEnumVar(&env, 0, "env", "build environment", string(EnvironmentLocal), string(EnvironmentTest))
+	fs.StringVar(&serverHost, 0, "server.host", "localhost", "server host address to listen for incoming requests")
+	fs.StringVar(&serverPort, 0, "server.port", "8080", "server port number to listen for incoming requests")
 	fs.IntVar(&serverTimeoutRead, 0, "server.timeout.read", 5, "number of seconds that the server will wait for reading requests")
 	fs.IntVar(&serverTimeoutWrite, 0, "server.timeout.write", 5, "number of seconds that the server will wait for writing requests")
 	fs.IntVar(&serverTimeoutIdle, 0, "server.timeout.idle", 120, "number of seconds that the server will wait for the next request")
@@ -120,7 +123,7 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 	fs.IntVar(&serverHealthDelay, 0, "server.health.delay", 5, "the initialization time for the program to bootstrap before the health check begins")
 	fs.IntVar(&serverHealthRetries, 0, "server.health.retries", 3, "the number of consecutive failures of the health check for the container to be considered unhealthy")
 	fs.IntVar(&serverMaxHeaderBytes, 0, "server.header", 10240, "number of bytes that will be the maximum permitted size of the headers in an HTTP request")
-	fs.StringVar(&authJWTAlg, 0, "auth.jwt.alg", "", "algorithm that was used for signing the JWT token")
+	fs.StringVar(&authJWTAlg, 0, "auth.jwt.alg", "HS256", "algorithm that was used for signing the JWT token")
 	fs.StringVar(&authJWTKey, 0, "auth.jwt.key", "", "key that was used for signing the JWT token")
 	fs.StringVar(&authJWTIssuer, 0, "auth.jwt.iss", "", `the "iss" (issuer) claim identifies the principal that issued the jwt`)
 	fs.StringListVar(&authJWTAudience, 0, "auth.jwt.aud", `the "aud" (audience) claim identifies the recipients that the jwt is intended for`)

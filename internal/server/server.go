@@ -52,7 +52,7 @@ func Exec(
 	// Setting up dependencies
 	jwtAuth := jwtauth.New(cfg.Auth.JWT.Algorithm, []byte(cfg.Auth.JWT.Key), nil)
 
-	db, err := initDB(cfg.DB)
+	db, err := initDB(cfg.Environment, cfg.DB)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func Exec(
 	return <-serverChan
 }
 
-func initDB(config *DB) (*gorm.DB, error) {
+func initDB(env Environment, config *DB) (*gorm.DB, error) {
 	config.DSN = fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		config.Host,
@@ -160,6 +160,13 @@ func initDB(config *DB) (*gorm.DB, error) {
 
 	// Migrate the schema
 	db.AutoMigrate(&userrepo.UserModel{})
+
+	// Seeding data for tests
+	if env == EnvironmentTest {
+		// Test users passwords: "password"
+		db.Exec(`INSERT INTO "User" (id, email, password, created_at, updated_at) VALUES ('794defc3-109a-4c6f-a7d2-cb976065ea80', 'to_be_deleted@email.com', '$argon2id$v=19$m=65536,t=1,p=8$c8RKqOjWl12MOm0kUIzY1g$zPDSs37yzKyh6SwQFpkmdAq+hf1PzglTIAIGGcsj8ro', '2020-07-04 11:05:21.775', '2020-07-04 11:05:21.775');`)
+		db.Exec(`INSERT INTO "User" (id, email, password, created_at, updated_at) VALUES ('1aef49bd-3296-45fb-84b9-083cf81b0e44', 'must_not_touch@email.com', '$argon2id$v=19$m=65536,t=1,p=8$c8RKqOjWl12MOm0kUIzY1g$zPDSs37yzKyh6SwQFpkmdAq+hf1PzglTIAIGGcsj8ro', '2020-07-04 11:05:21.775', '2020-07-04 11:05:21.775');`)
+	}
 
 	return db, nil
 }
