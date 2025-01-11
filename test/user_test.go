@@ -21,7 +21,7 @@ func TestUserHardDeleteByID(t *testing.T) {
 
 	route := fmt.Sprintf("http://%s:%s/users/{id}/delete", env.host, env.port)
 	client := &http.Client{}
-	token := "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiaHR0cDovL2xvY2FsaG9zdDo4MTExLyJdLCJleHAiOjQ3NjYxMzk0NjcsImlhdCI6MTczNjYwOTg2NywiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTExLyIsImp0aSI6ImZmMTBkNTkzLThmODgtNGU3Yy1hMDMwLTg1MjI0MWU2MmZlYyIsIm5iZiI6MTczNjYwOTg2Nywic3ViIjoiNzk0ZGVmYzMtMTA5YS00YzZmLWE3ZDItY2I5NzYwNjVlYTgwIn0.vSztx6LAOej9kVj3MflrI7S6aU1YfET1FnhpvyNKSuo"
+	const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiaHR0cDovL2xvY2FsaG9zdDo4MTExLyJdLCJleHAiOjQ3NjYxMzk0NjcsImlhdCI6MTczNjYwOTg2NywiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTExLyIsImp0aSI6ImZmMTBkNTkzLThmODgtNGU3Yy1hMDMwLTg1MjI0MWU2MmZlYyIsIm5iZiI6MTczNjYwOTg2Nywic3ViIjoiNzk0ZGVmYzMtMTA5YS00YzZmLWE3ZDItY2I5NzYwNjVlYTgwIn0.vSztx6LAOej9kVj3MflrI7S6aU1YfET1FnhpvyNKSuo"
 
 	// Anonymous requests receives Unauthorized response
 	t.Run("unauthorized", func(t *testing.T) {
