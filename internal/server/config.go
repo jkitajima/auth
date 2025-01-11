@@ -38,19 +38,19 @@ type Config struct {
 type Server struct {
 	Host           string
 	Port           string
-	Timeout        *ServerTimeout
-	Health         *ServerHealth
+	Timeout        *Timeout
+	Health         *Health
 	MaxHeaderBytes int
 }
 
-type ServerTimeout struct {
+type Timeout struct {
 	Read     int
 	Write    int
 	Idle     int
 	Shutdown int
 }
 
-type ServerHealth struct {
+type Health struct {
 	Timeout  int
 	Cache    int
 	Interval int
@@ -151,13 +151,13 @@ func NewConfig(stdout io.Writer, args []string) (*Config, error) {
 		Server: &Server{
 			Host: serverHost,
 			Port: serverPort,
-			Timeout: &ServerTimeout{
+			Timeout: &Timeout{
 				Read:     serverTimeoutRead,
 				Write:    serverTimeoutWrite,
 				Idle:     serverTimeoutIdle,
 				Shutdown: serverTimeoutShutdown,
 			},
-			Health: &ServerHealth{
+			Health: &Health{
 				Timeout:  serverHealthTimeout,
 				Cache:    serverHealthCache,
 				Interval: serverHealthInterval,
