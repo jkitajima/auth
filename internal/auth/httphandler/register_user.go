@@ -77,7 +77,7 @@ func (s *AuthServer) handleUserRegister() http.HandlerFunc {
 			span.RecordError(err)
 			switch err {
 			case user.ErrEmailAlreadyInUse:
-				responder.RespondMetaMessage(w, r, http.StatusBadRequest, "There is already an user with provided email.")
+				responder.RespondMetaMessage(w, r, http.StatusConflict, "There is already an user with provided email.")
 			case user.ErrInternal:
 				fallthrough
 			default:
